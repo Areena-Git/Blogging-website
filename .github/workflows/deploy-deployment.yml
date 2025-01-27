@@ -6,35 +6,31 @@ on:
       - develop
 
 jobs:
-  # Job 1: Build
-  dev-build-job:
+  build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout Repo
-        uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-      - name: Build with Parcel
-        run: npx parcel build "./src/index.html" --dist-dir "./dev" --public-url "./"
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16
 
-      - name: Upload Build Artifact
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build the website
+        run: npx parcel build
+
+      - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: ./dev
+          path: dist 
 
-  # Job 2: Deployment
-  dev-dep-job:
-    permissions:
-      pages: write
-      id-token: write
-    needs: dev-build-job
+  deploy:
     runs-on: ubuntu-latest
-    environment:
-      github-pages
+    needs: build
     steps:
-      - name: Checkout Repo
-        uses: actions/checkout@v4
-
       - name: Deploy to GitHub Pages
         uses: actions/deploy-pages@v4
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
